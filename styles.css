@@ -22,7 +22,6 @@ body {
     min-height: 100vh;
 }
 
-/* Premium Card Container */
 .game-container {
     background: var(--card-bg);
     width: 90%;
@@ -47,11 +46,41 @@ header {
 .stat { color: var(--cw-blue); }
 .timer { color: var(--cw-red); }
 
+/* Heart Container Architecture */
+.heart-container {
+    position: relative;
+    display: inline-block;
+    margin: 20px 0;
+}
+
 .well-graphic {
     font-size: 5rem;
-    margin: 20px 0;
+    position: relative;
+    z-index: 2;
     animation: floating 3s infinite ease-in-out;
-    display: inline-block;
+}
+
+/* Premium Neon Glow Text Styles */
+.status-glow {
+    font-weight: 700;
+    color: var(--cw-red);
+    text-shadow: 0 0 10px rgba(245, 64, 44, 0.6);
+    transition: all 0.2s ease;
+}
+
+.glow-blue {
+    color: var(--cw-blue) !important;
+    text-shadow: 0 0 15px rgba(46, 157, 247, 0.9) !important;
+}
+
+.glow-yellow {
+    color: var(--cw-yellow) !important;
+    text-shadow: 0 0 15px rgba(255, 201, 7, 0.9) !important;
+}
+
+.glow-green {
+    color: var(--cw-green) !important;
+    text-shadow: 0 0 15px rgba(79, 203, 83, 0.9) !important;
 }
 
 @keyframes floating {
@@ -65,7 +94,6 @@ h2 {
     color: var(--text-muted);
 }
 
-/* Sleek Progress Tracking */
 .progress-container {
     background: #334155;
     border-radius: 50px;
@@ -83,7 +111,6 @@ h2 {
     transition: width 0.08s linear;
 }
 
-/* Interactive Controls */
 .main-btn {
     background-color: var(--cw-yellow);
     color: #0F172A;
@@ -104,34 +131,7 @@ h2 {
     box-shadow: 0 6px 20px rgba(255, 201, 7, 0.4);
 }
 
-.main-btn:active {
-    transform: translateY(1px);
-}
-
-/* DEAD BY DAYLIGHT SKILL CHECK STYLING */
-.skill-check-container {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.95);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 20px;
-    z-index: 10;
-    backdrop-filter: blur(4px);
-}
-
-.skill-check-circle {
-    width: 160px;
-    height: 160px;
-    border: 4px solid #334155;
-    border-radius: 50%;
-    position: relative;
-    background: #020617;
-    box-shadow: 0 0 25px rgba(46, 157, 247, 0.15);
-}
-
+/* PERFECTED VISUAL TARGET ZONE LOCATION */
 .target-zone {
     position: absolute;
     width: 100%;
@@ -139,8 +139,10 @@ h2 {
     border-radius: 50%;
     border: 4px solid transparent;
     border-right-color: var(--cw-yellow); 
-    transform: rotate(60deg); 
+    border-bottom-color: var(--cw-yellow); 
+    transform: rotate(-45deg); 
     top: -4px; left: -4px;
+    box-shadow: 0 0 10px rgba(255, 201, 7, 0.2);
 }
 
 .needle {
@@ -163,7 +165,6 @@ h2 {
 
 .hidden { display: none !important; }
 
-/* End Screen Modal */
 .over-screen {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -178,38 +179,25 @@ h2 {
     z-index: 20;
 }
 
-.over-screen h1 {
-    font-size: 2rem;
-    margin-bottom: 12px;
+/* --- DBD VISUAL TERROR RADIUS HEART EFFECTS --- */
+.dbd-heart {
+    position: absolute;
+    font-size: 7rem;
+    top: -15px;
+    left: -15px;
+    z-index: 1;
+    opacity: 0.4;
+    color: var(--cw-red);
+    text-shadow: 0 0 20px var(--cw-red);
+    animation: heartPulse 0.6s infinite alternate ease-in-out;
 }
 
-.over-screen p {
-    color: var(--text-muted);
-    margin-bottom: 32px;
-    line-height: 1.5;
+@keyframes heartPulse {
+    0% { transform: scale(0.9); opacity: 0.3; filter: drop-shadow(0 0 5px var(--cw-red)); }
+    100% { transform: scale(1.15); opacity: 0.7; filter: drop-shadow(0 0 25px var(--cw-red)); }
 }
 
-/* --- ACCESSIBILITY VISUAL HEARTBEAT EFFECTS --- */
-.visual-heartbeat {
-    animation: dbdHeartbeat 0.4s infinite alternate ease-in-out !important;
-    text-shadow: 0 0 25px var(--cw-yellow);
-}
-
-@keyframes dbdHeartbeat {
-    0% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 4px rgba(255, 201, 7, 0.4));
-    }
-    100% {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 30px rgba(255, 201, 7, 1));
-    }
-}
-
-.screen-shake {
-    animation: shake 0.2s ease-in-out 2;
-}
-
+.screen-shake { animation: shake 0.2s ease-in-out 2; }
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-8px); }

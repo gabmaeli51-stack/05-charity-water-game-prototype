@@ -5,10 +5,8 @@ let timeLeft = 60;
 let isRepairing = false;
 let isSkillChecking = false;
 
-// Skill Check Timing Variables (Percentage based timeline)
+// Skill Check Degree Tracking Loop
 let skillCheckProgress = 0; 
-const targetMin = 40; 
-const targetMax = 65;  
 
 let repairInterval, countdownInterval, skillCheckInterval;
 
@@ -24,6 +22,7 @@ const gameOverScreen = document.getElementById('game-over-screen');
 const gameOverTitle = document.getElementById('game-over-title');
 const gameOverText = document.getElementById('game-over-text');
 const accessibilityMode = document.getElementById('accessibility-mode');
+const dbdHeart = document.getElementById('dbd-heart');
 
 // --- START GAME ENGINE CLOCK ---
 function startClock() {
@@ -49,15 +48,15 @@ repairBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRepai
 function startRepairing() {
     if (isSkillChecking) return;
     isRepairing = true;
+    
     wellStatusEl.textContent = "Repairing...";
-    wellStatusEl.style.color = "#2E9DF7";
+    wellStatusEl.className = "status-glow glow-blue";
 
     repairInterval = setInterval(() => {
         if (isRepairing) {
             progress += 0.4;
             progressBar.style.width = `${progress}%`;
 
-            // 1.5% chance per frame step to fire a Skill Check
             if (Math.random() < 0.015 && progress > 15 && progress < 85) {
                 stopRepairing();
                 triggerSkillCheck();
@@ -81,50 +80,48 @@ function stopRepairing() {
 // --- DBD SKILL CHECK LOGIC ---
 function triggerSkillCheck() {
     isSkillChecking = true;
-    skillCheckProgress = 0;
+    skillCheckProgress = 0; 
     
-    wellStatusEl.textContent = "⚠️ SKILL CHECK INCOMING!";
-    wellStatusEl.style.color = "#FFC907";
+    wellStatusEl.textContent = "⚠️ SKILL CHECK!";
+    wellStatusEl.className = "status-glow glow-yellow";
     
-    // VISUAL ASSIST FEATURE: Trigger the visual terror radius pulse
-    const wellGraphic = document.querySelector('.well-graphic');
-    if (accessibilityMode && accessibilityMode.checked && wellGraphic) {
-        wellGraphic.classList.add('visual-heartbeat');
+    if (accessibilityMode && accessibilityMode.checked && dbdHeart) {
+        dbdHeart.classList.remove('hidden');
     }
     
     setTimeout(() => {
         if (!isSkillChecking) return;
         skillCheckZone.classList.remove('hidden');
 
-        let speedStep = 2.5; 
+        let degreeStep = 5; 
         if (accessibilityMode && accessibilityMode.checked) {
-            speedStep = 1.3; // Much slower needle speed for latency protection
+            degreeStep = 2.5; // Slower speed so you can nail it easily
         }
 
         skillCheckInterval = setInterval(() => {
-            skillCheckProgress += speedStep;
-            let currentRotation = (skillCheckProgress / 100) * 360;
-            needle.style.transform = `rotate(${currentRotation}deg)`;
+            skillCheckProgress += degreeStep;
+            needle.style.transform = `rotate(${skillCheckProgress}deg)`;
 
-            if (skillCheckProgress >= 100) {
+            if (skillCheckProgress >= 360) {
                 resolveSkillCheck(false);
             }
         }, 16); 
     }, 250);
 }
 
-// Listen for Spacebar Input Interception
-window.addEventListener('keydown', (e) => {
+// THE BULLETPROOF WINDOW INTERCEPTOR
+document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && isSkillChecking) {
         e.preventDefault(); 
+        e.stopPropagation();
 
-        let currentMin = targetMin;
-        let currentMax = targetMax;
+        // Coordinates matching the yellow arc on screen exactly
+        let currentMin = 45;
+        let currentMax = 135;
 
-        // Visual assist mode expands hit window massively
         if (accessibilityMode && accessibilityMode.checked) {
-            currentMin = 25; 
-            currentMax = 85; 
+            currentMin = 20; 
+            currentMax = 180; 
         }
 
         if (skillCheckProgress >= currentMin && skillCheckProgress <= currentMax) {
@@ -140,23 +137,20 @@ function resolveSkillCheck(isSuccess) {
     isSkillChecking = false;
     skillCheckZone.classList.add('hidden');
 
-    // Clean up visual heartbeat classes
-    const wellGraphic = document.querySelector('.well-graphic');
+    if (dbdHeart) dbdHeart.classList.add('hidden');
     const gameContainer = document.querySelector('.game-container');
-    if (wellGraphic) wellGraphic.classList.remove('visual-heartbeat');
 
     if (isSuccess) {
         progress = Math.min(100, progress + 20); 
         progressBar.style.width = `${progress}%`;
         wellStatusEl.textContent = "✨ GREAT CHECK!";
-        wellStatusEl.style.color = "#4FCB53";
+        wellStatusEl.className = "status-glow glow-green";
     } else {
         progress = Math.max(0, progress - 15); 
         progressBar.style.width = `${progress}%`;
         wellStatusEl.textContent = "💥 EXPLODED!";
-        wellStatusEl.style.color = "#F5402C";
+        wellStatusEl.className = "status-glow"; 
         
-        // Visual Assist Screen Shake on explosion
         if (gameContainer) {
             gameContainer.classList.add('screen-shake');
             setTimeout(() => gameContainer.classList.remove('screen-shake'), 400);
@@ -166,10 +160,10 @@ function resolveSkillCheck(isSuccess) {
     setTimeout(() => {
         if (!isSkillChecking && isRepairing) {
             wellStatusEl.textContent = "Repairing...";
-            wellStatusEl.style.color = "#2E9DF7";
+            wellStatusEl.className = "status-glow glow-blue";
         } else if (!isSkillChecking) {
             wellStatusEl.textContent = "Broken";
-            wellStatusEl.style.color = "#F5402C";
+            wellStatusEl.className = "status-glow";
         }
     }, 1200);
 }
@@ -185,11 +179,11 @@ function wellCompleted() {
     if (completedWells >= 3) {
         endGame(true);
     } else {
-        wellStatusEl.textContent = "Well Repaired! Moving to next...";
-        wellStatusEl.style.color = "#4FCB53";
+        wellStatusEl.textContent = "Well Repaired!";
+        wellStatusEl.className = "status-glow glow-green";
         setTimeout(() => {
             wellStatusEl.textContent = "Broken";
-            wellStatusEl.style.color = "#F5402C";
+            wellStatusEl.className = "status-glow";
         }, 1500);
     }
 }
@@ -198,6 +192,7 @@ function endGame(isWin) {
     stopRepairing();
     clearInterval(countdownInterval);
     clearInterval(skillCheckInterval);
+    if (dbdHeart) dbdHeart.classList.add('hidden');
     
     gameOverScreen.classList.remove('hidden');
     if (isWin) {
@@ -209,7 +204,6 @@ function endGame(isWin) {
     }
 }
 
-// --- LEVEL UP EXTRA CREDIT: RESET FUNCTION ---
 document.getElementById('retry-btn').addEventListener('click', restartGame);
 
 function restartGame() {
@@ -223,15 +217,15 @@ function restartGame() {
     wellsCountEl.textContent = "0/3";
     timeLeftEl.textContent = timeLeft;
     wellStatusEl.textContent = "Broken";
-    wellStatusEl.style.color = "#F5402C";
+    wellStatusEl.className = "status-glow";
     
     gameOverScreen.classList.add('hidden');
     skillCheckZone.classList.add('hidden');
+    if (dbdHeart) dbdHeart.classList.add('hidden');
     
     clearInterval(countdownInterval);
     clearInterval(skillCheckInterval);
     startClock();
 }
 
-// Initialize on page load
 window.addEventListener('DOMContentLoaded', startClock);
