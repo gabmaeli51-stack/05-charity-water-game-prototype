@@ -19,6 +19,7 @@ const gameOverScreen = document.getElementById('game-over-screen');
 const gameOverTitle = document.getElementById('game-over-title');
 const gameOverText = document.getElementById('game-over-text');
 const resetBtn = document.getElementById('reset-btn');
+const accessibilityMode = document.getElementById('accessibility-mode');
 
 // --- START GAME ENGINE CLOCK ---
 function startClock() {
@@ -64,27 +65,42 @@ function stopRepairing() {
 function triggerSkillCheck() {
     isSkillChecking = true;
     needleRotation = 0;
-    skillCheckZone.classList.remove('hidden');
+    
+    // DBD Terror Radius / Skill Check Alert style visual flash right before it opens
+    wellStatusEl.textContent = "⚠️ SKILL CHECK INCOMING!";
+    wellStatusEl.style.color = "#FFC907";
+    
+    setTimeout(() => {
+        if (!isSkillChecking) return; // safety cancel
+        skillCheckZone.classList.remove('hidden');
 
-    // Spin the needle fast around the wheel
-    skillCheckInterval = setInterval(() => {
-        needleRotation += 6;
-        needle.style.transform = `rotate(${needleRotation}deg)`;
+        // Smoother frame rate (10ms interval instead of 20ms) eliminates browser lag!
+        skillCheckInterval = setInterval(() => {
+            needleRotation += 4; // Tighter rotation step for absolute precision
+            needle.style.transform = `rotate(${needleRotation}deg)`;
 
-        // If the needle does a full lap and user misses it completely
-        if (needleRotation >= 360) {
-            resolveSkillCheck(false);
-        }
-    }, 20);
+            if (needleRotation >= 360) {
+                resolveSkillCheck(false);
+            }
+        }, 10);
+    }, 250); // Small visual reaction window
 }
 
 // Listen for Spacebar Interception
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && isSkillChecking) {
-        e.preventDefault(); // Stop webpage from scrolling down
+        e.preventDefault(); 
 
-        // Fixed! Matches the visual yellow hitzone arc perfectly now
-        if (needleRotation >= 45 && needleRotation <= 135) {
+        // Set hit zones based on whether Accessibility Mode is toggled on or off
+        let minHit = 45;
+        let maxHit = 135;
+        
+        if (accessibilityMode && accessibilityMode.checked) {
+            minHit = 30;  // Extra wide safety boundaries for latency protection
+            maxHit = 160; 
+        }
+
+        if (needleRotation >= minHit && needleRotation <= maxHit) {
             resolveSkillCheck(true);
         } else {
             resolveSkillCheck(false);
@@ -98,18 +114,18 @@ function resolveSkillCheck(isSuccess) {
     skillCheckZone.classList.add('hidden');
 
     if (isSuccess) {
-        progress = Math.min(100, progress + 15); // Hit it! +15% Boost
+        progress = Math.min(100, progress + 15); 
         progressBar.style.width = `${progress}%`;
+        wellStatusEl.textContent = "✨ GREAT CHECK!";
+        wellStatusEl.style.color = "#4FCB53";
+        setTimeout(() => { wellStatusEl.textContent = "Repairing..."; wellStatusEl.style.color = "#94A3B8"; }, 1000);
     } else {
-        progress = Math.max(0, progress - 10); // Blew it! -10% Penalty
+        progress = Math.max(0, progress - 10); 
         progressBar.style.width = `${progress}%`;
         
-        // Quick feedback message to show explosion status
         wellStatusEl.textContent = "💥 EXPLODED!";
         wellStatusEl.style.color = "#F5402C";
-        setTimeout(() => { 
-            wellStatusEl.textContent = "Broken"; 
-        }, 1200);
+        setTimeout(() => { wellStatusEl.textContent = "Broken"; }, 1200);
     }
 }
 

@@ -9,24 +9,34 @@
 <body>
 
     <div class="game-container">
+        <!-- Top Stats Tracker & Accessibility Control -->
         <header>
             <div class="stat">Wells Completed: <span id="wells-count">0/3</span></div>
+            <div class="accessibility-toggle">
+                <label style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="accessibility-mode"> 👁️ Visual Assist Mode
+                </label>
+            </div>
             <div class="timer">Time Left: <span id="time-left">60</span>s</div>
         </header>
 
+        <!-- Main Workspace -->
         <main class="game-area">
             <div class="well-display">
                 <div class="well-graphic">🪣</div>
-                <h2>Well Status: <span id="well-status" style="color: #F5402C;">Broken</span></h2>
+                <h2>Well Status: <span id="well-status" style="color: #F5402C; font-weight: 700;">Broken</span></h2>
             </div>
 
+            <!-- Progress Bar Tracker -->
             <div class="progress-container">
                 <div class="progress-bar" id="progress-bar"></div>
             </div>
 
+            <!-- Interaction Controls -->
             <button id="repair-btn" class="main-btn">Click & Hold to Repair Well</button>
         </main>
 
+        <!-- DBD Style Skill Check Overlay -->
         <div id="skill-check-zone" class="skill-check-container hidden">
             <div class="skill-check-circle">
                 <div class="target-zone"></div>
@@ -35,10 +45,11 @@
             <p class="skill-check-prompt">Press <strong>SPACEBAR</strong> now!</p>
         </div>
         
+        <!-- Ending Screens -->
         <div id="game-over-screen" class="over-screen hidden">
             <h1 id="game-over-title">Village Hydrated! 🎉</h1>
             <p id="game-over-text">You beat the Water Crisis and repaired all 3 wells!</p>
-            <button id="reset-btn" class="main-btn">Play Again</button>
+            <button id="retry-btn" class="main-btn">Play Again</button>
         </div>
     </div>
 
