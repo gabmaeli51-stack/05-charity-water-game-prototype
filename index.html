@@ -3,11 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Charity Water Game</title>
+    <title>Well Repair: Clean Water Quest</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Welcome to the Charity Water Game Prototype</h1>
+
+    <div class="game-container">
+        <header>
+            <div class="stat">Wells Completed: <span id="wells-count">0/3</span></div>
+            <div class="timer">Time Left: <span id="time-left">60</span>s</div>
+        </header>
+
+        <main class="game-area">
+            <div class="well-display">
+                <div class="well-graphic">🪣</div>
+                <h2>Well Status: <span id="well-status" style="color: #F5402C;">Broken</span></h2>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <button id="repair-btn" class="main-btn">Click & Hold to Repair Well</button>
+        </main>
+
+        <div id="skill-check-zone" class="skill-check-container hidden">
+            <div class="skill-check-circle">
+                <div class="target-zone"></div>
+                <div class="needle" id="needle"></div>
+            </div>
+            <p class="skill-check-prompt">Press <strong>SPACEBAR</strong> now!</p>
+        </div>
+        
+        <div id="game-over-screen" class="over-screen hidden">
+            <h1 id="game-over-title">Village Hydrated! 🎉</h1>
+            <p id="game-over-text">You beat the Water Crisis and repaired all 3 wells!</p>
+            <button id="reset-btn" class="main-btn">Play Again</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
