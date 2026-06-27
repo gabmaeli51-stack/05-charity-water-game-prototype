@@ -4,7 +4,12 @@ let completedWells = 0;
 let timeLeft = 60;
 let isRepairing = false;
 let isSkillChecking = false;
-let needleRotation = 0;
+
+// Skill Check Timing Variables (Percentage based timeline)
+let skillCheckProgress = 0; 
+const targetMin = 40; 
+const targetMax = 65;  
+
 let repairInterval, countdownInterval, skillCheckInterval;
 
 // DOM Selectors
@@ -18,31 +23,42 @@ const needle = document.getElementById('needle');
 const gameOverScreen = document.getElementById('game-over-screen');
 const gameOverTitle = document.getElementById('game-over-title');
 const gameOverText = document.getElementById('game-over-text');
-const resetBtn = document.getElementById('reset-btn');
 const accessibilityMode = document.getElementById('accessibility-mode');
 
 // --- START GAME ENGINE CLOCK ---
 function startClock() {
+    clearInterval(countdownInterval); 
+    timeLeftEl.textContent = timeLeft;
+    
     countdownInterval = setInterval(() => {
-        timeLeft--;
-        timeLeftEl.textContent = timeLeft;
+        if (timeLeft > 0) {
+            timeLeft--;
+            timeLeftEl.textContent = timeLeft;
+        }
         if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
             endGame(false);
         }
     }, 1000);
 }
 
 // --- MOUSE HOLD REPAIR CONTROLS ---
-repairBtn.addEventListener('mousedown', () => {
+repairBtn.addEventListener('mousedown', startRepairing);
+repairBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRepairing(); });
+
+function startRepairing() {
     if (isSkillChecking) return;
     isRepairing = true;
+    wellStatusEl.textContent = "Repairing...";
+    wellStatusEl.style.color = "#2E9DF7";
+
     repairInterval = setInterval(() => {
         if (isRepairing) {
-            progress += 0.5;
+            progress += 0.4;
             progressBar.style.width = `${progress}%`;
 
-            // Random 1.5% chance every tick to trigger a Skill Check
-            if (Math.random() < 0.015 && progress > 10 && progress < 85) {
+            // 1.5% chance per frame step to fire a Skill Check
+            if (Math.random() < 0.015 && progress > 15 && progress < 85) {
                 stopRepairing();
                 triggerSkillCheck();
             }
@@ -52,9 +68,10 @@ repairBtn.addEventListener('mousedown', () => {
             }
         }
     }, 50);
-});
+}
 
 window.addEventListener('mouseup', stopRepairing);
+window.addEventListener('touchend', stopRepairing);
 
 function stopRepairing() {
     isRepairing = false;
@@ -64,43 +81,53 @@ function stopRepairing() {
 // --- DBD SKILL CHECK LOGIC ---
 function triggerSkillCheck() {
     isSkillChecking = true;
-    needleRotation = 0;
+    skillCheckProgress = 0;
     
-    // DBD Terror Radius / Skill Check Alert style visual flash right before it opens
     wellStatusEl.textContent = "⚠️ SKILL CHECK INCOMING!";
     wellStatusEl.style.color = "#FFC907";
     
+    // VISUAL ASSIST FEATURE: Trigger the visual terror radius pulse
+    const wellGraphic = document.querySelector('.well-graphic');
+    if (accessibilityMode && accessibilityMode.checked && wellGraphic) {
+        wellGraphic.classList.add('visual-heartbeat');
+    }
+    
     setTimeout(() => {
-        if (!isSkillChecking) return; // safety cancel
+        if (!isSkillChecking) return;
         skillCheckZone.classList.remove('hidden');
 
-        // Smoother frame rate (10ms interval instead of 20ms) eliminates browser lag!
-        skillCheckInterval = setInterval(() => {
-            needleRotation += 4; // Tighter rotation step for absolute precision
-            needle.style.transform = `rotate(${needleRotation}deg)`;
+        let speedStep = 2.5; 
+        if (accessibilityMode && accessibilityMode.checked) {
+            speedStep = 1.3; // Much slower needle speed for latency protection
+        }
 
-            if (needleRotation >= 360) {
+        skillCheckInterval = setInterval(() => {
+            skillCheckProgress += speedStep;
+            let currentRotation = (skillCheckProgress / 100) * 360;
+            needle.style.transform = `rotate(${currentRotation}deg)`;
+
+            if (skillCheckProgress >= 100) {
                 resolveSkillCheck(false);
             }
-        }, 10);
-    }, 250); // Small visual reaction window
+        }, 16); 
+    }, 250);
 }
 
-// Listen for Spacebar Interception
+// Listen for Spacebar Input Interception
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && isSkillChecking) {
         e.preventDefault(); 
 
-        // Set hit zones based on whether Accessibility Mode is toggled on or off
-        let minHit = 45;
-        let maxHit = 135;
-        
+        let currentMin = targetMin;
+        let currentMax = targetMax;
+
+        // Visual assist mode expands hit window massively
         if (accessibilityMode && accessibilityMode.checked) {
-            minHit = 30;  // Extra wide safety boundaries for latency protection
-            maxHit = 160; 
+            currentMin = 25; 
+            currentMax = 85; 
         }
 
-        if (needleRotation >= minHit && needleRotation <= maxHit) {
+        if (skillCheckProgress >= currentMin && skillCheckProgress <= currentMax) {
             resolveSkillCheck(true);
         } else {
             resolveSkillCheck(false);
@@ -113,20 +140,38 @@ function resolveSkillCheck(isSuccess) {
     isSkillChecking = false;
     skillCheckZone.classList.add('hidden');
 
+    // Clean up visual heartbeat classes
+    const wellGraphic = document.querySelector('.well-graphic');
+    const gameContainer = document.querySelector('.game-container');
+    if (wellGraphic) wellGraphic.classList.remove('visual-heartbeat');
+
     if (isSuccess) {
-        progress = Math.min(100, progress + 15); 
+        progress = Math.min(100, progress + 20); 
         progressBar.style.width = `${progress}%`;
         wellStatusEl.textContent = "✨ GREAT CHECK!";
         wellStatusEl.style.color = "#4FCB53";
-        setTimeout(() => { wellStatusEl.textContent = "Repairing..."; wellStatusEl.style.color = "#94A3B8"; }, 1000);
     } else {
-        progress = Math.max(0, progress - 10); 
+        progress = Math.max(0, progress - 15); 
         progressBar.style.width = `${progress}%`;
-        
         wellStatusEl.textContent = "💥 EXPLODED!";
         wellStatusEl.style.color = "#F5402C";
-        setTimeout(() => { wellStatusEl.textContent = "Broken"; }, 1200);
+        
+        // Visual Assist Screen Shake on explosion
+        if (gameContainer) {
+            gameContainer.classList.add('screen-shake');
+            setTimeout(() => gameContainer.classList.remove('screen-shake'), 400);
+        }
     }
+    
+    setTimeout(() => {
+        if (!isSkillChecking && isRepairing) {
+            wellStatusEl.textContent = "Repairing...";
+            wellStatusEl.style.color = "#2E9DF7";
+        } else if (!isSkillChecking) {
+            wellStatusEl.textContent = "Broken";
+            wellStatusEl.style.color = "#F5402C";
+        }
+    }, 1200);
 }
 
 // --- ACTION STATE CHANGES ---
@@ -140,7 +185,12 @@ function wellCompleted() {
     if (completedWells >= 3) {
         endGame(true);
     } else {
-        wellStatusEl.textContent = "Broken";
+        wellStatusEl.textContent = "Well Repaired! Moving to next...";
+        wellStatusEl.style.color = "#4FCB53";
+        setTimeout(() => {
+            wellStatusEl.textContent = "Broken";
+            wellStatusEl.style.color = "#F5402C";
+        }, 1500);
     }
 }
 
@@ -160,7 +210,6 @@ function endGame(isWin) {
 }
 
 // --- LEVEL UP EXTRA CREDIT: RESET FUNCTION ---
-if (resetBtn) resetBtn.addEventListener('click', restartGame);
 document.getElementById('retry-btn').addEventListener('click', restartGame);
 
 function restartGame() {
@@ -174,6 +223,7 @@ function restartGame() {
     wellsCountEl.textContent = "0/3";
     timeLeftEl.textContent = timeLeft;
     wellStatusEl.textContent = "Broken";
+    wellStatusEl.style.color = "#F5402C";
     
     gameOverScreen.classList.add('hidden');
     skillCheckZone.classList.add('hidden');
@@ -183,5 +233,5 @@ function restartGame() {
     startClock();
 }
 
-// Initialize on page bootup
-startClock();
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', startClock);

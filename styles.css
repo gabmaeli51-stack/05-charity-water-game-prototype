@@ -2,8 +2,8 @@
 :root {
     --cw-yellow: #FFC907;
     --cw-blue: #2E9DF7;
-    --portfolio-bg: #0F172A; /* Dark slate background from modern portfolios */
-    --card-bg: #1E293B;      /* Sleek inner card styling */
+    --portfolio-bg: #0F172A; 
+    --card-bg: #1E293B;      
     --text-main: #F8FAFC;
     --text-muted: #94A3B8;
     --cw-red: #F5402C;
@@ -51,6 +51,7 @@ header {
     font-size: 5rem;
     margin: 20px 0;
     animation: floating 3s infinite ease-in-out;
+    display: inline-block;
 }
 
 @keyframes floating {
@@ -107,7 +108,7 @@ h2 {
     transform: translateY(1px);
 }
 
-/* DBD SKILL CHECK STYLING */
+/* DEAD BY DAYLIGHT SKILL CHECK STYLING */
 .skill-check-container {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -186,4 +187,31 @@ h2 {
     color: var(--text-muted);
     margin-bottom: 32px;
     line-height: 1.5;
+}
+
+/* --- ACCESSIBILITY VISUAL HEARTBEAT EFFECTS --- */
+.visual-heartbeat {
+    animation: dbdHeartbeat 0.4s infinite alternate ease-in-out !important;
+    text-shadow: 0 0 25px var(--cw-yellow);
+}
+
+@keyframes dbdHeartbeat {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 4px rgba(255, 201, 7, 0.4));
+    }
+    100% {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 30px rgba(255, 201, 7, 1));
+    }
+}
+
+.screen-shake {
+    animation: shake 0.2s ease-in-out 2;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
 }
