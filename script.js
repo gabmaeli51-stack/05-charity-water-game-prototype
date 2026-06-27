@@ -40,7 +40,7 @@ repairBtn.addEventListener('mousedown', () => {
             progress += 0.5;
             progressBar.style.width = `${progress}%`;
 
-            // Random 1% chance every tick to trigger a Skill Check
+            // Random 1.5% chance every tick to trigger a Skill Check
             if (Math.random() < 0.015 && progress > 10 && progress < 85) {
                 stopRepairing();
                 triggerSkillCheck();
@@ -83,8 +83,8 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && isSkillChecking) {
         e.preventDefault(); // Stop webpage from scrolling down
 
-        // The target success zone arc is configured between 60deg and 150deg
-        if (needleRotation >= 60 && needleRotation <= 150) {
+        // Fixed! Matches the visual yellow hitzone arc perfectly now
+        if (needleRotation >= 45 && needleRotation <= 135) {
             resolveSkillCheck(true);
         } else {
             resolveSkillCheck(false);
@@ -103,9 +103,13 @@ function resolveSkillCheck(isSuccess) {
     } else {
         progress = Math.max(0, progress - 10); // Blew it! -10% Penalty
         progressBar.style.width = `${progress}%`;
-        // Quick flicker effect to show failure status
+        
+        // Quick feedback message to show explosion status
         wellStatusEl.textContent = "💥 EXPLODED!";
-        setTimeout(() => { wellStatusEl.textContent = "Broken"; }, 1200);
+        wellStatusEl.style.color = "#F5402C";
+        setTimeout(() => { 
+            wellStatusEl.textContent = "Broken"; 
+        }, 1200);
     }
 }
 
@@ -140,7 +144,7 @@ function endGame(isWin) {
 }
 
 // --- LEVEL UP EXTRA CREDIT: RESET FUNCTION ---
-resetBtn.addEventListener('click', restartGame);
+if (resetBtn) resetBtn.addEventListener('click', restartGame);
 document.getElementById('retry-btn').addEventListener('click', restartGame);
 
 function restartGame() {
